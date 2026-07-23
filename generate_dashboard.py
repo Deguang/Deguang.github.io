@@ -95,7 +95,8 @@ html_template = """<!DOCTYPE html>
     <meta name="author" content="Li Deguang">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{domain}/">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%91%8B</text></svg>">
+    <link rel="icon" type="image/png" href="https://github.com/{username}.png">
+    <link rel="apple-touch-icon" href="https://github.com/{username}.png">
     <meta name="theme-color" content="#f7f7f8" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
 
@@ -109,6 +110,7 @@ html_template = """<!DOCTYPE html>
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
+    <meta name="twitter:creator" content="@deguang_li">
     <meta name="twitter:title" content="Li Deguang - App Dashboard">
     <meta name="twitter:description" content="Personal dashboard and open-source project collection by Li Deguang">
     <meta name="twitter:image" content="https://github.com/{username}.png">
@@ -222,7 +224,7 @@ html_template = """<!DOCTYPE html>
             {cards}
         </main>
         <footer class="footer">
-            <p>&copy; {year} Li Deguang &middot; <a href="https://github.com/{username}">GitHub</a></p>
+            <p>&copy; {year} Li Deguang &middot; <a href="https://github.com/{username}">GitHub</a> &middot; <a href="https://x.com/deguang_li">X (Twitter)</a> &middot; <a href="https://blog.lideguang.com">Blog</a></p>
         </footer>
     </div>
 </body>
@@ -270,7 +272,7 @@ json_ld_data = {
             "@type": "Person",
             "name": "Li Deguang",
             "url": f"{DOMAIN}/",
-            "sameAs": [f"https://github.com/{USERNAME}"],
+            "sameAs": [f"https://github.com/{USERNAME}", "https://x.com/deguang_li", "https://blog.lideguang.com"],
         },
         {
             "@type": "CollectionPage",
