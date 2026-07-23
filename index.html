@@ -3,8 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Li Deguang - App Dashboard</title>
-    <meta name="description" content="Li Deguang 的应用导航台与开源项目集">
+    <title>Li Deguang - App Dashboard | 应用导航台</title>
+    <meta name="description" content="Li Deguang 的应用导航台，汇集开源项目与在线工具。Personal dashboard and open-source project collection by Li Deguang (GitHub: Deguang).">
+    <meta name="author" content="Li Deguang">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://app.lideguang.com/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%91%8B</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://app.lideguang.com/">
+    <meta property="og:title" content="Li Deguang - App Dashboard">
+    <meta property="og:description" content="Li Deguang 的应用导航台与开源项目集">
+    <meta property="og:image" content="https://github.com/Deguang.png">
+    <meta property="og:locale" content="zh_CN">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Li Deguang - App Dashboard">
+    <meta name="twitter:description" content="Li Deguang 的应用导航台与开源项目集">
+    <meta name="twitter:image" content="https://github.com/Deguang.png">
+
+    <!-- Structured data for search engines & AI/LLM answer engines (GEO) -->
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "name": "Li Deguang",
+      "url": "https://app.lideguang.com/",
+      "sameAs": [
+        "https://github.com/Deguang"
+      ]
+    },
+    {
+      "@type": "CollectionPage",
+      "name": "Li Deguang - App Dashboard",
+      "url": "https://app.lideguang.com/",
+      "description": "Li Deguang 的应用导航台与开源项目集",
+      "author": {
+        "@type": "Person",
+        "name": "Li Deguang"
+      },
+      "hasPart": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "query-params-viewer",
+          "url": "https://app.lideguang.com/query-params-viewer/",
+          "description": "暂无描述 (No description provided).",
+          "applicationCategory": "WebApplication"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "keep-scroll-sync",
+          "url": "https://app.lideguang.com/keep-scroll-sync/",
+          "description": "It's an extension for keep scroll position cross platform",
+          "applicationCategory": "WebApplication"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "link-and-title-copy-pro",
+          "url": "https://app.lideguang.com/link-and-title-copy-pro/",
+          "description": "Link&TitleCopyPro is a browser extension that allows you to copy both the title and URL link of a browser tab at the same time. 是一个可以同时复制浏览器标签页的标题和URL链接的浏览器扩展",
+          "applicationCategory": "WebApplication"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "gemini-graph-viewer",
+          "url": "https://app.lideguang.com/gemini-graph-viewer/",
+          "description": "Gemini Graph Split-Viewer",
+          "applicationCategory": "WebApplication"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "snap-kit",
+          "url": "https://app.lideguang.com/snap-kit/",
+          "description": "暂无描述 (No description provided).",
+          "applicationCategory": "WebApplication"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "learn-vue",
+          "url": "https://app.lideguang.com/learn-vue/",
+          "description": "Some notes and demos about Vue.js",
+          "applicationCategory": "WebApplication"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "merry-xmas",
+          "url": "https://app.lideguang.com/merry-xmas/",
+          "description": "暂无描述 (No description provided).",
+          "applicationCategory": "WebApplication"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "single-page-app",
+          "url": "https://app.lideguang.com/single-page-app/",
+          "description": "暂无描述 (No description provided).",
+          "applicationCategory": "WebApplication"
+        }
+      ]
+    }
+  ]
+}
+    </script>
+
     <!-- 引入 PaperCSS 实现手写风格 -->
     <link rel="stylesheet" href="https://unpkg.com/papercss@1.9.2/dist/paper.min.css">
     <style>
@@ -13,18 +117,20 @@
         .card { height: 100%; display: flex; flex-direction: column; }
         .card-body { flex: 1; }
         .card-footer { margin-top: auto; padding-top: 1rem; }
+        .site-footer { margin-top: 3rem; text-align: center; }
     </style>
 </head>
 <body>
     <div class="row flex-center">
         <div class="col-12 sm-10 md-10 lg-8">
-            <div class="dashboard-header">
+            <header class="dashboard-header">
                 <h1>Hi, I'm Deguang 👋</h1>
                 <p>Welcome to my application dashboard. 欢迎来到我的应用导航页。</p>
-                <p class="text-muted">Last updated: 2026-07-23 01:50:46</p>
-            </div>
-            <div class="row">
-                
+                <p class="text-muted">Last updated: 2026-07-23 03:57:04</p>
+            </header>
+            <main>
+                <div class="row">
+                    
 <div class="col-12 sm-6 md-6 lg-4 margin-bottom">
     <div class="card">
         <div class="card-body">
@@ -121,7 +227,11 @@
     </div>
 </div>
 
-            </div>
+                </div>
+            </main>
+            <footer class="site-footer text-muted">
+                <p>&copy; 2026 Li Deguang &middot; <a href="https://github.com/Deguang">GitHub</a></p>
+            </footer>
         </div>
     </div>
 </body>
