@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Li Deguang - App Dashboard | 应用导航台</title>
-    <meta name="description" content="Li Deguang 的应用导航台，汇集开源项目与在线工具。Personal dashboard and open-source project collection by Li Deguang (GitHub: Deguang).">
+    <title>Li Deguang - App Dashboard</title>
+    <meta name="description" content="Personal dashboard and open-source project collection by Li Deguang (GitHub: Deguang).">
     <meta name="author" content="Li Deguang">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://app.lideguang.com/">
@@ -16,14 +16,14 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://app.lideguang.com/">
     <meta property="og:title" content="Li Deguang - App Dashboard">
-    <meta property="og:description" content="Li Deguang 的应用导航台与开源项目集">
+    <meta property="og:description" content="Personal dashboard and open-source project collection by Li Deguang">
     <meta property="og:image" content="https://github.com/Deguang.png">
-    <meta property="og:locale" content="zh_CN">
+    <meta property="og:locale" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Li Deguang - App Dashboard">
-    <meta name="twitter:description" content="Li Deguang 的应用导航台与开源项目集">
+    <meta name="twitter:description" content="Personal dashboard and open-source project collection by Li Deguang">
     <meta name="twitter:image" content="https://github.com/Deguang.png">
 
     <!-- Structured data for search engines & AI/LLM answer engines (GEO) -->
@@ -43,7 +43,7 @@
       "@type": "CollectionPage",
       "name": "Li Deguang - App Dashboard",
       "url": "https://app.lideguang.com/",
-      "description": "Li Deguang 的应用导航台与开源项目集",
+      "description": "Personal dashboard and open-source project collection by Li Deguang",
       "author": {
         "@type": "Person",
         "name": "Li Deguang"
@@ -51,16 +51,9 @@
       "hasPart": [
         {
           "@type": "SoftwareApplication",
-          "name": "query-params-viewer",
-          "url": "https://app.lideguang.com/query-params-viewer/",
-          "description": "暂无描述 (No description provided).",
-          "applicationCategory": "WebApplication"
-        },
-        {
-          "@type": "SoftwareApplication",
-          "name": "keep-scroll-sync",
-          "url": "https://app.lideguang.com/keep-scroll-sync/",
-          "description": "It's an extension for keep scroll position cross platform",
+          "name": "vue-pdf-reader",
+          "url": "https://github.com/Deguang/vue-pdf-reader",
+          "description": "A vue pdf reader component, based on pdf.js.",
           "applicationCategory": "WebApplication"
         },
         {
@@ -79,30 +72,16 @@
         },
         {
           "@type": "SoftwareApplication",
-          "name": "snap-kit",
-          "url": "https://app.lideguang.com/snap-kit/",
-          "description": "暂无描述 (No description provided).",
+          "name": "keep-scroll-sync",
+          "url": "https://app.lideguang.com/keep-scroll-sync/",
+          "description": "It's an extension for keep scroll position cross platform",
           "applicationCategory": "WebApplication"
         },
         {
           "@type": "SoftwareApplication",
-          "name": "learn-vue",
-          "url": "https://app.lideguang.com/learn-vue/",
-          "description": "Some notes and demos about Vue.js",
-          "applicationCategory": "WebApplication"
-        },
-        {
-          "@type": "SoftwareApplication",
-          "name": "merry-xmas",
-          "url": "https://app.lideguang.com/merry-xmas/",
-          "description": "暂无描述 (No description provided).",
-          "applicationCategory": "WebApplication"
-        },
-        {
-          "@type": "SoftwareApplication",
-          "name": "single-page-app",
-          "url": "https://app.lideguang.com/single-page-app/",
-          "description": "暂无描述 (No description provided).",
+          "name": "edgeform",
+          "url": "https://github.com/Deguang/edgeform",
+          "description": "Edge-native micro-site engine — one JSON, seven themes, zero cost.  Built entirely on Cloudflare's free tier: Pages + D1 + KV.",
           "applicationCategory": "WebApplication"
         }
       ]
@@ -157,6 +136,7 @@
             50% { transform: rotate(10deg); }
         }
         .tagline { color: var(--muted); margin: 0 0 0.25rem; }
+        .tagline-sub { color: var(--muted); font-size: 0.8rem; opacity: 0.75; margin: 0 0 0.75rem; }
         .meta { color: var(--muted); font-size: 0.85rem; margin: 0; }
         .grid {
             display: grid;
@@ -178,10 +158,12 @@
             box-shadow: var(--shadow-hover);
             border-color: var(--accent);
         }
-        .card-title { font-size: 1.05rem; font-weight: 600; margin: 0 0 0.5rem; }
+        .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .card-title { font-size: 1.05rem; font-weight: 600; margin: 0; }
+        .card-updated { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
         .card-desc { color: var(--muted); font-size: 0.9rem; flex: 1; margin: 0 0 1.25rem; }
+        .card-links { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; }
         .card-link {
-            align-self: flex-start;
             color: var(--accent);
             text-decoration: none;
             font-weight: 600;
@@ -192,6 +174,8 @@
             transition: gap 0.15s ease;
         }
         .card-link:hover { gap: 0.55rem; }
+        .card-link-ghost { color: var(--muted); font-weight: 500; }
+        .card-link-ghost:hover { color: var(--accent); }
         .footer { text-align: center; margin-top: 3.5rem; color: var(--muted); font-size: 0.85rem; }
         .footer a { color: var(--accent); text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
@@ -202,57 +186,65 @@
         <header class="hero">
             <img class="avatar" src="https://github.com/Deguang.png" alt="Li Deguang avatar" width="72" height="72" loading="lazy">
             <h1>Hi, I'm Deguang <span class="wave">👋</span></h1>
-            <p class="tagline">Welcome to my application dashboard. 欢迎来到我的应用导航页。</p>
-            <p class="meta">Last updated: 2026-07-23 04:16:22</p>
+            <p class="tagline">Welcome to my application dashboard.</p>
+            <p class="tagline-sub">欢迎来到我的应用导航页</p>
+            <p class="meta">Last updated: 2026-07-23 09:42:37</p>
         </header>
         <main class="grid">
             
 <article class="card">
-    <h2 class="card-title">query-params-viewer</h2>
-    <p class="card-desc">暂无描述 (No description provided).</p>
-    <a href="/query-params-viewer/" class="card-link">Visit App <span aria-hidden="true">&rarr;</span></a>
+    <div class="card-head">
+        <h2 class="card-title">vue-pdf-reader</h2>
+        <span class="card-updated">3 年前更新</span>
+    </div>
+    <p class="card-desc">A vue pdf reader component, based on pdf.js.</p>
+    <div class="card-links">
+        <a href="https://github.com/Deguang/vue-pdf-reader" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
+    </div>
 </article>
 
 <article class="card">
-    <h2 class="card-title">keep-scroll-sync</h2>
-    <p class="card-desc">It's an extension for keep scroll position cross platform</p>
-    <a href="/keep-scroll-sync/" class="card-link">Visit App <span aria-hidden="true">&rarr;</span></a>
-</article>
-
-<article class="card">
-    <h2 class="card-title">link-and-title-copy-pro</h2>
+    <div class="card-head">
+        <h2 class="card-title">link-and-title-copy-pro</h2>
+        <span class="card-updated">1 个月前更新</span>
+    </div>
     <p class="card-desc">Link&TitleCopyPro is a browser extension that allows you to copy both the title and URL link of a browser tab at the same time. 是一个可以同时复制浏览器标签页的标题和URL链接的浏览器扩展</p>
-    <a href="/link-and-title-copy-pro/" class="card-link">Visit App <span aria-hidden="true">&rarr;</span></a>
+    <div class="card-links">
+        <a href="/link-and-title-copy-pro/" class="card-link">Visit App &rarr;</a><a href="https://github.com/Deguang/link-and-title-copy-pro" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
+    </div>
 </article>
 
 <article class="card">
-    <h2 class="card-title">gemini-graph-viewer</h2>
+    <div class="card-head">
+        <h2 class="card-title">gemini-graph-viewer</h2>
+        <span class="card-updated">2 个月前更新</span>
+    </div>
     <p class="card-desc">Gemini Graph Split-Viewer</p>
-    <a href="/gemini-graph-viewer/" class="card-link">Visit App <span aria-hidden="true">&rarr;</span></a>
+    <div class="card-links">
+        <a href="/gemini-graph-viewer/" class="card-link">Visit App &rarr;</a><a href="https://github.com/Deguang/gemini-graph-viewer" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
+    </div>
 </article>
 
 <article class="card">
-    <h2 class="card-title">snap-kit</h2>
-    <p class="card-desc">暂无描述 (No description provided).</p>
-    <a href="/snap-kit/" class="card-link">Visit App <span aria-hidden="true">&rarr;</span></a>
+    <div class="card-head">
+        <h2 class="card-title">keep-scroll-sync</h2>
+        <span class="card-updated">9 天前更新</span>
+    </div>
+    <p class="card-desc">It's an extension for keep scroll position cross platform</p>
+    <div class="card-links">
+        <a href="/keep-scroll-sync/" class="card-link">Visit App &rarr;</a><a href="https://github.com/Deguang/keep-scroll-sync" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
+    </div>
 </article>
 
 <article class="card">
-    <h2 class="card-title">learn-vue</h2>
-    <p class="card-desc">Some notes and demos about Vue.js</p>
-    <a href="/learn-vue/" class="card-link">Visit App <span aria-hidden="true">&rarr;</span></a>
-</article>
-
-<article class="card">
-    <h2 class="card-title">merry-xmas</h2>
-    <p class="card-desc">暂无描述 (No description provided).</p>
-    <a href="/merry-xmas/" class="card-link">Visit App <span aria-hidden="true">&rarr;</span></a>
-</article>
-
-<article class="card">
-    <h2 class="card-title">single-page-app</h2>
-    <p class="card-desc">暂无描述 (No description provided).</p>
-    <a href="/single-page-app/" class="card-link">Visit App <span aria-hidden="true">&rarr;</span></a>
+    <div class="card-head">
+        <h2 class="card-title">edgeform</h2>
+        <span class="card-updated">2 个月前更新</span>
+    </div>
+    <p class="card-desc">Edge-native micro-site engine — one JSON, seven themes, zero cost.  Built entirely on Cloudflare's free tier: Pages + D1 + KV.</p>
+    <div class="card-links">
+        <a href="https://github.com/Deguang/edgeform" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
+    </div>
 </article>
 
         </main>

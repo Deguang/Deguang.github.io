@@ -1,19 +1,22 @@
 import os
 import json
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timezone
 
 USERNAME = "Deguang"
 DOMAIN = "https://app.lideguang.com"
 TOKEN = os.getenv("GITHUB_TOKEN")
 
-# 获取用户的公开仓库 (最多取前 100 个)
-url = f"https://api.github.com/users/{USERNAME}/repos?per_page=100&type=owner&sort=updated"
-headers = {"Accept": "application/vnd.github.v3+json"}
-if TOKEN:
-    headers["Authorization"] = f"token {TOKEN}"
+# Chrome 应用商店链接，GitHub API 无法拿到，手动维护
+CHROME_STORE_LINKS = {}
 
-req = urllib.request.Request(url, headers=headers)
+REST_HEADERS = {"Accept": "application/vnd.github.v3+json"}
+if TOKEN:
+    REST_HEADERS["Authorization"] = f"token {TOKEN}"
+
+# 获取用户的公开仓库 (最多取前 100 个)
+repos_url = f"https://api.github.com/users/{USERNAME}/repos?per_page=100&type=owner&sort=updated"
+req = urllib.request.Request(repos_url, headers=REST_HEADERS)
 try:
     with urllib.request.urlopen(req) as response:
         repos = json.loads(response.read().decode())
@@ -21,19 +24,74 @@ except Exception as e:
     print(f"Error fetching repos: {e}")
     repos = []
 
-# 筛选出带有 Github Pages 的仓库，并排除根域名自身项目，防止套娃
-pages_repos = [
-    repo for repo in repos
-    if repo.get("has_pages") and repo["name"].lower() != f"{USERNAME.lower()}.github.io"
-]
+repos_by_name = {repo["name"]: repo for repo in repos}
+
+# 通过 GraphQL 获取个人主页 pin 住的仓库 (最多 6 个，按 pin 顺序)
+PINNED_QUERY = """
+query($login: String!) {
+  user(login: $login) {
+    pinnedItems(first: 6, types: [REPOSITORY]) {
+      nodes {
+        ... on Repository {
+          name
+        }
+      }
+    }
+  }
+}
+"""
+
+pinned_names = []
+if TOKEN:
+    try:
+        payload = json.dumps({"query": PINNED_QUERY, "variables": {"login": USERNAME}}).encode("utf-8")
+        gql_req = urllib.request.Request(
+            "https://api.github.com/graphql",
+            data=payload,
+            headers={
+                "Authorization": f"bearer {TOKEN}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(gql_req) as response:
+            result = json.loads(response.read().decode())
+        nodes = result.get("data", {}).get("user", {}).get("pinnedItems", {}).get("nodes", [])
+        pinned_names = [n["name"] for n in nodes]
+    except Exception as e:
+        print(f"Error fetching pinned repos: {e}")
+
+if pinned_names:
+    display_repos = [repos_by_name[name] for name in pinned_names if name in repos_by_name]
+else:
+    # 兜底：拿不到 pinned 数据时（例如本地无 token），退回展示所有开启了 Pages 的仓库
+    print("No pinned repos found, falling back to has_pages repos.")
+    display_repos = [
+        repo for repo in repos
+        if repo.get("has_pages") and repo["name"].lower() != f"{USERNAME.lower()}.github.io"
+    ]
+
+
+def relative_time(iso_str):
+    dt = datetime.strptime(iso_str, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    days = (datetime.now(timezone.utc) - dt).days
+    if days < 1:
+        return "今天更新"
+    if days < 30:
+        return f"{days} 天前更新"
+    months = days // 30
+    if months < 12:
+        return f"{months} 个月前更新"
+    return f"{days // 365} 年前更新"
+
 
 html_template = """<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Li Deguang - App Dashboard | 应用导航台</title>
-    <meta name="description" content="Li Deguang 的应用导航台，汇集开源项目与在线工具。Personal dashboard and open-source project collection by Li Deguang (GitHub: {username}).">
+    <title>Li Deguang - App Dashboard</title>
+    <meta name="description" content="Personal dashboard and open-source project collection by Li Deguang (GitHub: {username}).">
     <meta name="author" content="Li Deguang">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{domain}/">
@@ -45,14 +103,14 @@ html_template = """<!DOCTYPE html>
     <meta property="og:type" content="website">
     <meta property="og:url" content="{domain}/">
     <meta property="og:title" content="Li Deguang - App Dashboard">
-    <meta property="og:description" content="Li Deguang 的应用导航台与开源项目集">
+    <meta property="og:description" content="Personal dashboard and open-source project collection by Li Deguang">
     <meta property="og:image" content="https://github.com/{username}.png">
-    <meta property="og:locale" content="zh_CN">
+    <meta property="og:locale" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Li Deguang - App Dashboard">
-    <meta name="twitter:description" content="Li Deguang 的应用导航台与开源项目集">
+    <meta name="twitter:description" content="Personal dashboard and open-source project collection by Li Deguang">
     <meta name="twitter:image" content="https://github.com/{username}.png">
 
     <!-- Structured data for search engines & AI/LLM answer engines (GEO) -->
@@ -106,6 +164,7 @@ html_template = """<!DOCTYPE html>
             50% {{ transform: rotate(10deg); }}
         }}
         .tagline {{ color: var(--muted); margin: 0 0 0.25rem; }}
+        .tagline-sub {{ color: var(--muted); font-size: 0.8rem; opacity: 0.75; margin: 0 0 0.75rem; }}
         .meta {{ color: var(--muted); font-size: 0.85rem; margin: 0; }}
         .grid {{
             display: grid;
@@ -127,10 +186,12 @@ html_template = """<!DOCTYPE html>
             box-shadow: var(--shadow-hover);
             border-color: var(--accent);
         }}
-        .card-title {{ font-size: 1.05rem; font-weight: 600; margin: 0 0 0.5rem; }}
+        .card-head {{ display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; margin-bottom: 0.5rem; }}
+        .card-title {{ font-size: 1.05rem; font-weight: 600; margin: 0; }}
+        .card-updated {{ font-size: 0.75rem; color: var(--muted); white-space: nowrap; }}
         .card-desc {{ color: var(--muted); font-size: 0.9rem; flex: 1; margin: 0 0 1.25rem; }}
+        .card-links {{ display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; }}
         .card-link {{
-            align-self: flex-start;
             color: var(--accent);
             text-decoration: none;
             font-weight: 600;
@@ -141,6 +202,8 @@ html_template = """<!DOCTYPE html>
             transition: gap 0.15s ease;
         }}
         .card-link:hover {{ gap: 0.55rem; }}
+        .card-link-ghost {{ color: var(--muted); font-weight: 500; }}
+        .card-link-ghost:hover {{ color: var(--accent); }}
         .footer {{ text-align: center; margin-top: 3.5rem; color: var(--muted); font-size: 0.85rem; }}
         .footer a {{ color: var(--accent); text-decoration: none; }}
         .footer a:hover {{ text-decoration: underline; }}
@@ -151,7 +214,8 @@ html_template = """<!DOCTYPE html>
         <header class="hero">
             <img class="avatar" src="https://github.com/{username}.png" alt="Li Deguang avatar" width="72" height="72" loading="lazy">
             <h1>Hi, I'm Deguang <span class="wave">👋</span></h1>
-            <p class="tagline">Welcome to my application dashboard. 欢迎来到我的应用导航页。</p>
+            <p class="tagline">Welcome to my application dashboard.</p>
+            <p class="tagline-sub">欢迎来到我的应用导航页</p>
             <p class="meta">Last updated: {update_time}</p>
         </header>
         <main class="grid">
@@ -167,18 +231,30 @@ html_template = """<!DOCTYPE html>
 
 card_template = """
 <article class="card">
-    <h2 class="card-title">{name}</h2>
+    <div class="card-head">
+        <h2 class="card-title">{name}</h2>
+        <span class="card-updated">{updated}</span>
+    </div>
     <p class="card-desc">{description}</p>
-    <a href="/{name}/" class="card-link">Visit App <span aria-hidden="true">&rarr;</span></a>
+    <div class="card-links">
+        {visit_link}<a href="{repo_url}" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>{store_link}
+    </div>
 </article>
 """
 
 cards_html = ""
-for repo in pages_repos:
-    desc = repo.get("description") or "暂无描述 (No description provided)."
+for repo in display_repos:
+    desc = repo.get("description") or "No description provided."
+    visit_link = f'<a href="/{repo["name"]}/" class="card-link">Visit App &rarr;</a>' if repo.get("has_pages") else ""
+    store_url = CHROME_STORE_LINKS.get(repo["name"])
+    store_link = f'<a href="{store_url}" class="card-link card-link-ghost" target="_blank" rel="noopener">Chrome Store &rarr;</a>' if store_url else ""
     cards_html += card_template.format(
         name=repo["name"],
         description=desc,
+        updated=relative_time(repo["pushed_at"]),
+        repo_url=repo["html_url"],
+        visit_link=visit_link,
+        store_link=store_link,
     )
 
 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -200,17 +276,17 @@ json_ld_data = {
             "@type": "CollectionPage",
             "name": "Li Deguang - App Dashboard",
             "url": f"{DOMAIN}/",
-            "description": "Li Deguang 的应用导航台与开源项目集",
+            "description": "Personal dashboard and open-source project collection by Li Deguang",
             "author": {"@type": "Person", "name": "Li Deguang"},
             "hasPart": [
                 {
                     "@type": "SoftwareApplication",
                     "name": repo["name"],
-                    "url": f"{DOMAIN}/{repo['name']}/",
-                    "description": repo.get("description") or "暂无描述 (No description provided).",
+                    "url": f"{DOMAIN}/{repo['name']}/" if repo.get("has_pages") else repo["html_url"],
+                    "description": repo.get("description") or "No description provided.",
                     "applicationCategory": "WebApplication",
                 }
-                for repo in pages_repos
+                for repo in display_repos
             ],
         },
     ],
@@ -229,8 +305,10 @@ final_html = html_template.format(
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(final_html)
 
-# 生成 sitemap.xml，帮助搜索引擎与生成式引擎发现所有子项目页面
-sitemap_urls = [f"{DOMAIN}/"] + [f"{DOMAIN}/{repo['name']}/" for repo in pages_repos]
+# 生成 sitemap.xml：只收录在本域名下真正有页面的项目
+sitemap_urls = [f"{DOMAIN}/"] + [
+    f"{DOMAIN}/{repo['name']}/" for repo in display_repos if repo.get("has_pages")
+]
 sitemap_entries = "\n".join(
     f"  <url>\n    <loc>{u}</loc>\n    <lastmod>{current_date}</lastmod>\n  </url>"
     for u in sitemap_urls
