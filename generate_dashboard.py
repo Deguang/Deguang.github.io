@@ -71,6 +71,9 @@ else:
         if repo.get("has_pages") and repo["name"].lower() != f"{USERNAME.lower()}.github.io"
     ]
 
+# 最新更新的排在最前面
+display_repos.sort(key=lambda repo: repo["pushed_at"], reverse=True)
+
 
 def relative_time(iso_str):
     dt = datetime.strptime(iso_str, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
