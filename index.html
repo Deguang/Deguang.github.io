@@ -55,37 +55,44 @@
       "hasPart": [
         {
           "@type": "SoftwareApplication",
-          "name": "link-and-title-copy-pro",
+          "name": "Link & Title Copy Pro",
           "url": "https://app.lideguang.com/link-and-title-copy-pro/",
-          "description": "Link&TitleCopyPro is a browser extension that allows you to copy both the title and URL link of a browser tab at the same time. 是一个可以同时复制浏览器标签页的标题和URL链接的浏览器扩展",
+          "description": "A lightweight browser extension to copy tab titles and URL links simultaneously in Markdown, HTML, and text formats. 一键复制浏览器标签页标题与链接。",
           "applicationCategory": "WebApplication"
         },
         {
           "@type": "SoftwareApplication",
-          "name": "keep-scroll-sync",
+          "name": "Query Params Viewer",
+          "url": "https://app.lideguang.com/query-params-viewer/",
+          "description": "A free online developer tool to parse, decode, and visualize complex URL query string parameters with real-time editing and nested tree view.",
+          "applicationCategory": "WebApplication"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Keep Scroll Sync",
           "url": "https://app.lideguang.com/keep-scroll-sync/",
-          "description": "It's an extension for keep scroll position cross platform",
+          "description": "A cross-platform productivity extension to preserve, record, and synchronize webpage scroll positions across browsers.",
           "applicationCategory": "WebApplication"
         },
         {
           "@type": "SoftwareApplication",
-          "name": "gemini-graph-viewer",
+          "name": "Gemini Graph Viewer",
           "url": "https://app.lideguang.com/gemini-graph-viewer/",
-          "description": "Gemini Graph Split-Viewer",
+          "description": "A split-view diagram and graph visualizer tool designed for side-by-side comparison, rendering, and real-time visualization.",
           "applicationCategory": "WebApplication"
         },
         {
           "@type": "SoftwareApplication",
-          "name": "edgeform",
+          "name": "EdgeForm",
           "url": "https://github.com/Deguang/edgeform",
-          "description": "Edge-native micro-site engine — one JSON, seven themes, zero cost.  Built entirely on Cloudflare's free tier: Pages + D1 + KV.",
+          "description": "An edge-native micro-site engine and dynamic form builder powered by Cloudflare Pages, D1, and KV with zero hosting cost.",
           "applicationCategory": "WebApplication"
         },
         {
           "@type": "SoftwareApplication",
-          "name": "vue-pdf-reader",
+          "name": "Vue PDF Reader",
           "url": "https://github.com/Deguang/vue-pdf-reader",
-          "description": "A vue pdf reader component, based on pdf.js.",
+          "description": "An open-source Vue.js component for responsive PDF reading, rendering, and document viewing based on PDF.js.",
           "applicationCategory": "WebApplication"
         }
       ]
@@ -148,6 +155,7 @@
             gap: 1.25rem;
         }
         .card {
+            position: relative;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 14px;
@@ -162,11 +170,72 @@
             box-shadow: var(--shadow-hover);
             border-color: var(--accent);
         }
-        .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; margin-bottom: 0.5rem; }
-        .card-title { font-size: 1.05rem; font-weight: 600; margin: 0; }
-        .card-updated { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
-        .card-desc { color: var(--muted); font-size: 0.9rem; flex: 1; margin: 0 0 1.25rem; }
-        .card-links { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; }
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin: 0;
+            line-height: 1.4;
+        }
+        /* Primary anchor text with stretched link covering the entire card */
+        .card-title-link {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        .card-title-link:hover,
+        .card:hover .card-title-link {
+            color: var(--accent);
+        }
+        .card-title-link::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            border-radius: 14px;
+        }
+        .card-updated {
+            font-size: 0.75rem;
+            color: var(--muted);
+            white-space: nowrap;
+            position: relative;
+            z-index: 2;
+        }
+        .card-desc {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            flex: 1;
+            margin: 0 0 1.25rem;
+        }
+        .card-links {
+            display: flex;
+            align-items: center;
+            gap: 1.1rem;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+        /* Visual button indicator without <a> to avoid SEO anchor dilution */
+        .card-btn-action {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            pointer-events: none;
+            transition: gap 0.15s ease;
+        }
+        .card:hover .card-btn-action {
+            gap: 0.55rem;
+        }
         .card-link {
             color: var(--accent);
             text-decoration: none;
@@ -175,11 +244,21 @@
             display: inline-flex;
             align-items: center;
             gap: 0.35rem;
-            transition: gap 0.15s ease;
+            transition: gap 0.15s ease, color 0.15s ease;
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
         }
-        .card-link:hover { gap: 0.55rem; }
-        .card-link-ghost { color: var(--muted); font-weight: 500; }
-        .card-link-ghost:hover { color: var(--accent); }
+        .card-link:hover {
+            gap: 0.55rem;
+        }
+        .card-link-ghost {
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .card-link-ghost:hover {
+            color: var(--accent);
+        }
         .footer { text-align: center; margin-top: 3.5rem; color: var(--muted); font-size: 0.85rem; }
         .footer a { color: var(--accent); text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
@@ -192,49 +271,60 @@
             <h1>Hi, I'm Deguang <span class="wave">👋</span></h1>
             <p class="tagline">Welcome to my application dashboard.</p>
             <p class="tagline-sub">欢迎来到我的应用导航页</p>
-            <p class="meta">Last updated: 2026-09-02 01:57:24</p>
+            <p class="meta">Last updated: 2026-09-02 06:25:03</p>
         </header>
         <main class="grid">
             
 <article class="card">
     <div class="card-head">
-        <h2 class="card-title">link-and-title-copy-pro</h2>
+        <h2 class="card-title"><a href="/link-and-title-copy-pro/" class="card-title-link" title="Copy Browser Tab Title and URL Link Extension">Link & Title Copy Pro</a></h2>
         <span class="card-updated">5 天前更新</span>
     </div>
-    <p class="card-desc">Link&TitleCopyPro is a browser extension that allows you to copy both the title and URL link of a browser tab at the same time. 是一个可以同时复制浏览器标签页的标题和URL链接的浏览器扩展</p>
+    <p class="card-desc">A lightweight browser extension to copy tab titles and URL links simultaneously in Markdown, HTML, and text formats. 一键复制浏览器标签页标题与链接。</p>
     <div class="card-links">
-        <a href="/link-and-title-copy-pro/" class="card-link">Visit App &rarr;</a><a href="https://github.com/Deguang/link-and-title-copy-pro" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
+        <span class="card-btn-action" aria-hidden="true">Visit App &rarr;</span><a href="https://github.com/Deguang/link-and-title-copy-pro" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
     </div>
 </article>
 
 <article class="card">
     <div class="card-head">
-        <h2 class="card-title">keep-scroll-sync</h2>
+        <h2 class="card-title"><a href="/query-params-viewer/" class="card-title-link" title="URL Query String Parser & Parameter Visualizer">Query Params Viewer</a></h2>
+        <span class="card-updated">27 天前更新</span>
+    </div>
+    <p class="card-desc">A free online developer tool to parse, decode, and visualize complex URL query string parameters with real-time editing and nested tree view.</p>
+    <div class="card-links">
+        <span class="card-btn-action" aria-hidden="true">Visit App &rarr;</span><a href="https://github.com/Deguang/query-params-viewer" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
+    </div>
+</article>
+
+<article class="card">
+    <div class="card-head">
+        <h2 class="card-title"><a href="/keep-scroll-sync/" class="card-title-link" title="Cross-Platform Scroll Position Keeper & Synchronizer">Keep Scroll Sync</a></h2>
         <span class="card-updated">1 个月前更新</span>
     </div>
-    <p class="card-desc">It's an extension for keep scroll position cross platform</p>
+    <p class="card-desc">A cross-platform productivity extension to preserve, record, and synchronize webpage scroll positions across browsers.</p>
     <div class="card-links">
-        <a href="/keep-scroll-sync/" class="card-link">Visit App &rarr;</a><a href="https://github.com/Deguang/keep-scroll-sync" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
+        <span class="card-btn-action" aria-hidden="true">Visit App &rarr;</span><a href="https://github.com/Deguang/keep-scroll-sync" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
     </div>
 </article>
 
 <article class="card">
     <div class="card-head">
-        <h2 class="card-title">gemini-graph-viewer</h2>
+        <h2 class="card-title"><a href="/gemini-graph-viewer/" class="card-title-link" title="Gemini Graph Split-Viewer & Diagram Visualizer Tool">Gemini Graph Viewer</a></h2>
         <span class="card-updated">3 个月前更新</span>
     </div>
-    <p class="card-desc">Gemini Graph Split-Viewer</p>
+    <p class="card-desc">A split-view diagram and graph visualizer tool designed for side-by-side comparison, rendering, and real-time visualization.</p>
     <div class="card-links">
-        <a href="/gemini-graph-viewer/" class="card-link">Visit App &rarr;</a><a href="https://github.com/Deguang/gemini-graph-viewer" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
+        <span class="card-btn-action" aria-hidden="true">Visit App &rarr;</span><a href="https://github.com/Deguang/gemini-graph-viewer" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
     </div>
 </article>
 
 <article class="card">
     <div class="card-head">
-        <h2 class="card-title">edgeform</h2>
+        <h2 class="card-title"><a href="https://page.lideguang.com/" class="card-title-link" title="Edge-Native Micro-Site Engine & Dynamic Form Generator" target="_blank" rel="noopener">EdgeForm</a></h2>
         <span class="card-updated">3 个月前更新</span>
     </div>
-    <p class="card-desc">Edge-native micro-site engine — one JSON, seven themes, zero cost.  Built entirely on Cloudflare's free tier: Pages + D1 + KV.</p>
+    <p class="card-desc">An edge-native micro-site engine and dynamic form builder powered by Cloudflare Pages, D1, and KV with zero hosting cost.</p>
     <div class="card-links">
         <a href="https://github.com/Deguang/edgeform" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
     </div>
@@ -242,10 +332,10 @@
 
 <article class="card">
     <div class="card-head">
-        <h2 class="card-title">vue-pdf-reader</h2>
+        <h2 class="card-title"><a href="https://github.com/Deguang/vue-pdf-reader" class="card-title-link" title="Vue.js PDF Reader Component & Document Viewer" target="_blank" rel="noopener">Vue PDF Reader</a></h2>
         <span class="card-updated">3 年前更新</span>
     </div>
-    <p class="card-desc">A vue pdf reader component, based on pdf.js.</p>
+    <p class="card-desc">An open-source Vue.js component for responsive PDF reading, rendering, and document viewing based on PDF.js.</p>
     <div class="card-links">
         <a href="https://github.com/Deguang/vue-pdf-reader" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>
     </div>
