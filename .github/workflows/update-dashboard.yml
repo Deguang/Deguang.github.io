@@ -31,6 +31,6 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add index.html sitemap.xml
-          git diff-index --quiet HEAD || git commit -m "chore: auto-generate dashboard index.html"
+          git add index.html sitemap.xml deguang-footer.js footer-snippet.html deguang-footer-skill.md
+          git diff-index --quiet HEAD || git commit -m "chore: auto-generate dashboard, sitemap, and footer component"
           git push

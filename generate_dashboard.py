@@ -492,6 +492,88 @@ final_html = html_template.format(
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(final_html)
 
+# Compute Matrix links from all repos with GitHub Pages
+pages_repos = [
+    repo for repo in repos
+    if repo.get("has_pages") and repo["name"].lower() != f"{USERNAME.lower()}.github.io"
+]
+matrix_html_js = ""
+matrix_html_snippet = ""
+if pages_repos:
+    matrix_links = " &middot; ".join([f'<a href="{DOMAIN}/{repo["name"]}/" target="_blank" rel="noopener">{repo["name"]}</a>' for repo in pages_repos])
+    matrix_html_js = f'''
+                <div class="matrix-links" style="margin-bottom: 12px; line-height: 1.8;">
+                    <span style="color:#6b7280; font-weight: 500; margin-right: 8px;">Matrix:</span>
+                    {matrix_links}
+                </div>
+                <div style="border-top: 1px dashed #d1d5db; margin: 12px auto; max-width: 60%; opacity: 0.3;"></div>'''
+    matrix_html_snippet = matrix_html_js
+
+# Generate a dynamic Web Component for other projects to use as a unified footer
+footer_js_content = f"""class DeguangFooter extends HTMLElement {{
+    constructor() {{
+        super();
+        this.attachShadow({{ mode: 'open' }});
+    }}
+    connectedCallback() {{
+        const year = new Date().getFullYear();
+        const style = `
+            :host {{ display: block; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }}
+            .footer {{ text-align: center; margin-top: 3.5rem; padding: 1.5rem 0; color: #6b7280; font-size: 0.85rem; }}
+            .footer a {{ color: #4f46e5; text-decoration: none; transition: color 0.15s ease; }}
+            .footer a:hover {{ text-decoration: underline; color: #4338ca; }}
+            @media (prefers-color-scheme: dark) {{
+                .footer {{ color: #9ca3af; }}
+                .footer a {{ color: #818cf8; }}
+                .footer a:hover {{ color: #a5b4fc; }}
+            }}
+        `;
+        this.shadowRoot.innerHTML = `
+            <style>${{style}}</style>
+            <footer class="footer">{matrix_html_js}
+                <p>&copy; ${{year}} Li Deguang &middot; 
+                <a href="https://app.lideguang.com" target="_blank" rel="noopener">App Dashboard</a> &middot; 
+                <a href="https://github.com/{USERNAME}" target="_blank" rel="noopener">GitHub</a> &middot; 
+                <a href="https://x.com/deguang_li" target="_blank" rel="noopener">X</a></p>
+            </footer>
+        `;
+    }}
+}}
+customElements.define('deguang-footer', DeguangFooter);
+"""
+with open("deguang-footer.js", "w", encoding="utf-8") as f:
+    f.write(footer_js_content)
+
+# Optional: Generate a pure HTML snippet for build-time pulling (CI/CD)
+footer_hybrid_snippet = f"""
+<!-- SEO & 兜底静态结构 (会被动态 JS 覆盖) -->
+<deguang-footer>
+    <style>
+        .deguang-footer-fallback {{ font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }}
+        .deguang-footer-fallback .footer {{ text-align: center; margin-top: 3.5rem; padding: 1.5rem 0; color: #6b7280; font-size: 0.85rem; }}
+        .deguang-footer-fallback .footer a {{ color: #4f46e5; text-decoration: none; transition: color 0.15s ease; }}
+        .deguang-footer-fallback .footer a:hover {{ text-decoration: underline; color: #4338ca; }}
+        @media (prefers-color-scheme: dark) {{
+            .deguang-footer-fallback .footer {{ color: #9ca3af; }}
+            .deguang-footer-fallback .footer a {{ color: #818cf8; }}
+            .deguang-footer-fallback .footer a:hover {{ color: #a5b4fc; }}
+        }}
+    </style>
+    <div class="deguang-footer-fallback">
+        <footer class="footer">{matrix_html_snippet}
+            <p>&copy; {current_date[:4]} Li Deguang &middot; 
+            <a href="https://app.lideguang.com" target="_blank" rel="noopener">App Dashboard</a> &middot; 
+            <a href="https://github.com/{USERNAME}" target="_blank" rel="noopener">GitHub</a> &middot; 
+            <a href="https://x.com/deguang_li" target="_blank" rel="noopener">X</a></p>
+        </footer>
+    </div>
+</deguang-footer>
+<!-- 运行时动态拉取最新组件 -->
+<script src="{DOMAIN}/deguang-footer.js" type="module" async></script>
+"""
+with open("footer-snippet.html", "w", encoding="utf-8") as f:
+    f.write(footer_hybrid_snippet)
+
 # 生成 sitemap.xml：收录主页及所有开启了 Pages 的项目页面
 sitemap_urls = [f"{DOMAIN}/"] + [
     f"{DOMAIN}/{repo['name']}/"
