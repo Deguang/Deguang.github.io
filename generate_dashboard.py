@@ -492,22 +492,65 @@ final_html = html_template.format(
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(final_html)
 
-# Compute Matrix links from all repos with GitHub Pages
-pages_repos = [
-    repo for repo in repos
-    if repo.get("has_pages") and repo["name"].lower() != f"{USERNAME.lower()}.github.io"
-]
-matrix_html_js = ""
-matrix_html_snippet = ""
-if pages_repos:
-    matrix_links = " &middot; ".join([f'<a href="{DOMAIN}/{repo["name"]}/" target="_blank" rel="noopener">{repo["name"]}</a>' for repo in pages_repos])
-    matrix_html_js = f'''
-                <div class="matrix-links" style="margin-bottom: 12px; line-height: 1.8;">
-                    <span style="color:#6b7280; font-weight: 500; margin-right: 8px;">Matrix:</span>
-                    {matrix_links}
+# Compute Matrix links from display_repos (mirroring the dashboard cards)
+matrix_links_list = []
+for repo in display_repos:
+    if repo["name"].lower() == f"{USERNAME.lower()}.github.io":
+        continue
+    meta = get_repo_meta(repo)
+    url = meta["app_url"]
+    if url.startswith("/"):
+        url = f"{DOMAIN}{url}"
+    matrix_links_list.append(f'<a href="{url}" target="_blank" rel="noopener">{meta["name"]}</a>')
+
+matrix_html = ""
+if matrix_links_list:
+    matrix_links = "".join(matrix_links_list)
+    matrix_html = f'''
+                    <div class="matrix-section">
+                        <h3 class="matrix-heading">App Matrix</h3>
+                        <div class="matrix-grid">
+                            {matrix_links}
+                        </div>
+                    </div>
+                    <hr class="footer-divider" />'''
+
+shared_css = """
+        :host, .deguang-footer-fallback { display: block; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        .footer { margin-top: 4rem; padding: 4rem 1.5rem 2rem; background-color: var(--dg-bg-subtle, transparent); border-top: 1px solid var(--dg-border, #eaeaea); display: flex; flex-direction: column; align-items: center; }
+        .footer-content { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 2.5rem; }
+        .matrix-section { display: flex; flex-direction: column; gap: 1.5rem; width: 100%; }
+        .matrix-heading { margin: 0; font-size: 0.875rem; font-weight: 600; color: var(--dg-heading, #111827); letter-spacing: 0.05em; text-transform: uppercase; }
+        .matrix-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem 2rem; }
+        @media (min-width: 640px) { .matrix-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 768px) { .matrix-grid { grid-template-columns: repeat(4, 1fr); } }
+        .matrix-grid a { color: var(--dg-muted, #6b7280); font-size: 0.875rem; text-decoration: none; transition: color 0.2s ease, transform 0.2s ease; display: inline-block; }
+        .matrix-grid a:hover { color: var(--dg-main, #111827); transform: translateX(3px); }
+        .footer-divider { border: 0; height: 1px; background: var(--dg-border, #eaeaea); width: 100%; margin: 0; }
+        .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.5rem; font-size: 0.875rem; color: var(--dg-muted, #9ca3af); }
+        .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .footer-links a { color: var(--dg-muted, #9ca3af); text-decoration: none; transition: color 0.2s ease; }
+        .footer-links a:hover { color: var(--dg-main, #111827); }
+        @media (prefers-color-scheme: dark) {
+            .footer { --dg-border: #2a2e37; --dg-heading: #f3f4f6; --dg-muted: #9ca3af; --dg-main: #ffffff; }
+        }
+"""
+
+def get_footer_inner_html(year_str):
+    return f'''
+            <footer class="footer">
+                <div class="footer-content">{matrix_html}
+                    <div class="footer-bottom">
+                        <div class="footer-copyright">&copy; {year_str} Li Deguang</div>
+                        <div class="footer-links">
+                            <a href="https://app.lideguang.com" target="_blank" rel="noopener">Dashboard</a>
+                            <a href="https://github.com/{USERNAME}" target="_blank" rel="noopener">GitHub</a>
+                            <a href="https://x.com/deguang_li" target="_blank" rel="noopener">X</a>
+                        </div>
+                    </div>
                 </div>
-                <div style="border-top: 1px dashed #d1d5db; margin: 12px auto; max-width: 60%; opacity: 0.3;"></div>'''
-    matrix_html_snippet = matrix_html_js
+            </footer>
+'''
 
 # Generate a dynamic Web Component for other projects to use as a unified footer
 footer_js_content = f"""class DeguangFooter extends HTMLElement {{
@@ -517,25 +560,9 @@ footer_js_content = f"""class DeguangFooter extends HTMLElement {{
     }}
     connectedCallback() {{
         const year = new Date().getFullYear();
-        const style = `
-            :host {{ display: block; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }}
-            .footer {{ text-align: center; margin-top: 3.5rem; padding: 1.5rem 0; color: #6b7280; font-size: 0.85rem; }}
-            .footer a {{ color: #4f46e5; text-decoration: none; transition: color 0.15s ease; }}
-            .footer a:hover {{ text-decoration: underline; color: #4338ca; }}
-            @media (prefers-color-scheme: dark) {{
-                .footer {{ color: #9ca3af; }}
-                .footer a {{ color: #818cf8; }}
-                .footer a:hover {{ color: #a5b4fc; }}
-            }}
-        `;
         this.shadowRoot.innerHTML = `
-            <style>${{style}}</style>
-            <footer class="footer">{matrix_html_js}
-                <p>&copy; ${{year}} Li Deguang &middot; 
-                <a href="https://app.lideguang.com" target="_blank" rel="noopener">App Dashboard</a> &middot; 
-                <a href="https://github.com/{USERNAME}" target="_blank" rel="noopener">GitHub</a> &middot; 
-                <a href="https://x.com/deguang_li" target="_blank" rel="noopener">X</a></p>
-            </footer>
+            <style>{shared_css}</style>
+{get_footer_inner_html('${year}')}
         `;
     }}
 }}
@@ -548,28 +575,13 @@ with open("deguang-footer.js", "w", encoding="utf-8") as f:
 footer_hybrid_snippet = f"""
 <!-- SEO & 兜底静态结构 (会被动态 JS 覆盖) -->
 <deguang-footer>
-    <style>
-        .deguang-footer-fallback {{ font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }}
-        .deguang-footer-fallback .footer {{ text-align: center; margin-top: 3.5rem; padding: 1.5rem 0; color: #6b7280; font-size: 0.85rem; }}
-        .deguang-footer-fallback .footer a {{ color: #4f46e5; text-decoration: none; transition: color 0.15s ease; }}
-        .deguang-footer-fallback .footer a:hover {{ text-decoration: underline; color: #4338ca; }}
-        @media (prefers-color-scheme: dark) {{
-            .deguang-footer-fallback .footer {{ color: #9ca3af; }}
-            .deguang-footer-fallback .footer a {{ color: #818cf8; }}
-            .deguang-footer-fallback .footer a:hover {{ color: #a5b4fc; }}
-        }}
-    </style>
+    <style>{shared_css}</style>
     <div class="deguang-footer-fallback">
-        <footer class="footer">{matrix_html_snippet}
-            <p>&copy; {current_date[:4]} Li Deguang &middot; 
-            <a href="https://app.lideguang.com" target="_blank" rel="noopener">App Dashboard</a> &middot; 
-            <a href="https://github.com/{USERNAME}" target="_blank" rel="noopener">GitHub</a> &middot; 
-            <a href="https://x.com/deguang_li" target="_blank" rel="noopener">X</a></p>
-        </footer>
+{get_footer_inner_html(current_date[:4])}
     </div>
 </deguang-footer>
 <!-- 运行时动态拉取最新组件 -->
-<script src="{DOMAIN}/deguang-footer.js" type="module" async></script>
+<script src="./deguang-footer.js" type="module" async></script>
 """
 with open("footer-snippet.html", "w", encoding="utf-8") as f:
     f.write(footer_hybrid_snippet)
