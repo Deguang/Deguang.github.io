@@ -350,6 +350,7 @@ html_template = """<!DOCTYPE html>
             flex-wrap: wrap;
             position: relative;
             z-index: 2;
+            pointer-events: none;
         }}
         /* Visual button indicator without <a> to avoid SEO anchor dilution */
         .card-btn-action {{
@@ -373,6 +374,7 @@ html_template = """<!DOCTYPE html>
             display: inline-flex;
             align-items: center;
             gap: 0.35rem;
+            pointer-events: auto;
             transition: gap 0.15s ease, color 0.15s ease;
             position: relative;
             z-index: 2;

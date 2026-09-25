@@ -32,7 +32,7 @@ class DeguangFooter extends HTMLElement {
                     <div class="matrix-section">
                         <h3 class="matrix-heading">App Matrix</h3>
                         <div class="matrix-grid">
-                            <a href="https://app.lideguang.com/query-params-viewer/" target="_blank" rel="noopener">Query Params Viewer</a><a href="https://app.lideguang.com/gemini-polish/" target="_blank" rel="noopener">Gemini Polish</a><a href="https://app.lideguang.com/link-and-title-copy-pro/" target="_blank" rel="noopener">Link & Title Copy Pro</a><a href="https://app.lideguang.com/keep-scroll-sync/" target="_blank" rel="noopener">Keep Scroll Sync</a><a href="https://page.lideguang.com/" target="_blank" rel="noopener">EdgeForm</a><a href="https://github.com/Deguang/vue-pdf-reader" target="_blank" rel="noopener">Vue PDF Reader</a>
+                            <a href="https://app.lideguang.com/query-params-viewer/" target="_blank" rel="noopener">Query Params Viewer</a><a href="https://app.lideguang.com/link-and-title-copy-pro/" target="_blank" rel="noopener">Link & Title Copy Pro</a><a href="https://app.lideguang.com/keep-scroll-sync/" target="_blank" rel="noopener">Keep Scroll Sync</a><a href="https://page.lideguang.com/" target="_blank" rel="noopener">EdgeForm</a><a href="https://github.com/Deguang/vue-pdf-reader" target="_blank" rel="noopener">Vue PDF Reader</a>
                         </div>
                     </div>
                     <hr class="footer-divider" />
