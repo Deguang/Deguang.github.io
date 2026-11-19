@@ -7,69 +7,14 @@ USERNAME = "Deguang"
 DOMAIN = "https://app.lideguang.com"
 TOKEN = os.getenv("GITHUB_TOKEN")
 
-# Custom metadata to enrich SEO anchor text, title attributes, and context descriptions
-APP_METADATA = {
-    "query-params-viewer": {
-        "name": "Query Params Viewer",
-        "title": "URL Query String Parser & Parameter Visualizer",
-        "description": "A free online developer tool to parse, decode, and visualize complex URL query string parameters with real-time editing and nested tree view.",
-    },
-    "gemini-graph-viewer": {
-        "name": "Gemini Graph Viewer",
-        "title": "Gemini Graph Split-Viewer & Diagram Visualizer Tool",
-        "description": "A split-view diagram and graph visualizer tool designed for side-by-side comparison, rendering, and real-time visualization.",
-    },
-    "link-and-title-copy-pro": {
-        "name": "Link & Title Copy Pro",
-        "title": "Copy Browser Tab Title and URL Link Extension",
-        "description": "A lightweight browser extension to copy tab titles and URL links simultaneously in Markdown, HTML, and text formats. 一键复制浏览器标签页标题与链接。",
-    },
-    "keep-scroll-sync": {
-        "name": "Keep Scroll Sync",
-        "title": "Cross-Platform Scroll Position Keeper & Synchronizer",
-        "description": "A cross-platform productivity extension to preserve, record, and synchronize webpage scroll positions across browsers.",
-    },
-    "edgeform": {
-        "name": "EdgeForm",
-        "title": "Edge-Native Micro-Site Engine & Dynamic Form Generator",
-        "description": "An edge-native micro-site engine and dynamic form builder powered by Cloudflare Pages, D1, and KV with zero hosting cost.",
-    },
-    "vue-pdf-reader": {
-        "name": "Vue PDF Reader",
-        "title": "Vue.js PDF Reader Component & Document Viewer",
-        "description": "An open-source Vue.js component for responsive PDF reading, rendering, and document viewing based on PDF.js.",
-    },
-    "token-speed-visual": {
-        "name": "Token Speed Visual",
-        "title": "LLM Token Generation Speed & Latency Benchmark Visualizer",
-        "description": "An interactive benchmark visualizer to measure, compare, and display real-time LLM token generation speed and throughput.",
-    },
-    "doc-parser": {
-        "name": "Doc Parser",
-        "title": "Smart Document Parser & Content Extractor",
-        "description": "An automated document parsing and text extraction tool for structured data analysis and batch processing.",
-    },
-    "agent-course": {
-        "name": "Agent Course",
-        "title": "TypeScript AI Agent Development Course",
-        "description": "A practical provider-neutral TypeScript course and hands-on guide for building autonomous AI agents.",
-    },
-    "snap-kit": {
-        "name": "Snap Kit",
-        "title": "Web Screenshot & Code Snippet Snapping Tool",
-        "description": "A fast web snapshot and image capture utility for creating beautiful code snippets and UI screenshots.",
-    },
-}
+# 展示清单（死列表）：收录与否 + 展示信息都维护在 featured.json（可用 admin.py 可视化编辑）。
+# GitHub 项目写 {"repo": "<仓库名>"}，name/title/description 可选（留空则在部署时用 GitHub 上的信息）；
+# 站外项目写 {"url": "...", ...}，信息全靠条目自带。
+# 列表顺序不影响展示，卡片按更新时间自动排序。
+FEATURED_FILE = "featured.json"
 
-# Default featured list used as fallback when no GitHub token / pinned items available
-DEFAULT_FEATURED = [
-    "query-params-viewer",
-    "link-and-title-copy-pro",
-    "keep-scroll-sync",
-    "gemini-graph-viewer",
-    "edgeform",
-    "vue-pdf-reader",
-]
+with open(FEATURED_FILE, encoding="utf-8") as f:
+    featured_items = json.load(f).get("projects", [])
 
 # Chrome 应用商店链接，GitHub API 无法拿到，手动维护
 CHROME_STORE_LINKS = {}
@@ -93,62 +38,61 @@ except Exception as e:
 
 repos_by_name = {repo["name"]: repo for repo in repos}
 
-# 通过 GraphQL 获取个人主页 pin 住的仓库 (最多 6 个，按 pin 顺序)
-PINNED_QUERY = """
-query($login: String!) {
-  user(login: $login) {
-    pinnedItems(first: 6, types: [REPOSITORY]) {
-      nodes {
-        ... on Repository {
-          name
-        }
-      }
+
+def build_item(entry):
+    """把 featured.json 条目解析成统一的展示结构。动态信息以部署时拉取的 API 结果为准。"""
+    if isinstance(entry, dict) and entry.get("url"):
+        # 站外项目：GitHub 上没有，信息全部来自条目本身
+        display_name = entry.get("name") or entry["url"].split("//", 1)[-1].rstrip("/")
+        title_attr = entry.get("title") or f"{display_name} - Developer Tool"
+        description = entry.get("description") or f"A developer tool and open-source project for {display_name}."
+        app_url = entry["url"]
+        target_attr = ' target="_blank" rel="noopener"'
+        repo_url = None
+        pushed_at = entry.get("updated")  # 可选 ISO 时间，如 "2026-11-01T00:00:00Z"
+        has_pages = False
+        raw_name = display_name
+    else:
+        if isinstance(entry, str):
+            name, override = entry, {}
+        elif isinstance(entry, dict) and entry.get("repo"):
+            name, override = entry["repo"], entry
+        else:
+            print(f"Warning: featured entry missing 'repo' or 'url', skipped: {entry!r}")
+            return None
+        repo = repos_by_name.get(name)
+        if repo is None:
+            # 仓库不存在或 API 拉取失败：仍然出卡片，但没有更新时间等动态信息
+            print(f"Warning: featured repo not found on GitHub: {name}")
+            repo = {
+                "name": name,
+                "html_url": f"https://github.com/{USERNAME}/{name}",
+                "homepage": None,
+                "description": None,
+                "has_pages": False,
+                "pushed_at": None,
+            }
+        display_name = override.get("name") or format_title(name)
+        title_attr = override.get("title") or f"{display_name} - Developer Tool"
+        description = override.get("description") or repo.get("description") or f"A developer tool and open-source project for {display_name}."
+        has_pages = bool(repo.get("has_pages"))
+        app_url = f"/{name}/" if has_pages else (repo.get("homepage") or repo["html_url"])
+        target_attr = "" if has_pages else ' target="_blank" rel="noopener"'
+        repo_url = repo["html_url"]
+        pushed_at = repo.get("pushed_at")
+        raw_name = name
+
+    return {
+        "name": display_name,
+        "raw_name": raw_name,
+        "title_attr": title_attr,
+        "description": description,
+        "app_url": app_url,
+        "target_attr": target_attr,
+        "has_pages": has_pages,
+        "repo_url": repo_url,
+        "pushed_at": pushed_at,
     }
-  }
-}
-"""
-
-pinned_names = []
-if TOKEN:
-    try:
-        payload = json.dumps({"query": PINNED_QUERY, "variables": {"login": USERNAME}}).encode("utf-8")
-        gql_req = urllib.request.Request(
-            "https://api.github.com/graphql",
-            data=payload,
-            headers={
-                "Authorization": f"bearer {TOKEN}",
-                "Content-Type": "application/json",
-                "User-Agent": "Deguang-App-Dashboard",
-            },
-            method="POST",
-        )
-        with urllib.request.urlopen(gql_req) as response:
-            result = json.loads(response.read().decode())
-        nodes = result.get("data", {}).get("user", {}).get("pinnedItems", {}).get("nodes", [])
-        pinned_names = [n["name"] for n in nodes]
-    except Exception as e:
-        print(f"Error fetching pinned repos: {e}")
-
-# Priority order: pinned repos first, then additional featured repos
-ordered_names = []
-for name in pinned_names:
-    if name not in ordered_names and name in repos_by_name:
-        ordered_names.append(name)
-for name in DEFAULT_FEATURED:
-    if name not in ordered_names and name in repos_by_name:
-        ordered_names.append(name)
-
-if ordered_names:
-    display_repos = [repos_by_name[name] for name in ordered_names]
-else:
-    # 兜底：退回展示所有开启了 Pages 的仓库
-    display_repos = [
-        repo for repo in repos
-        if repo.get("has_pages") and repo["name"].lower() != f"{USERNAME.lower()}.github.io"
-    ]
-
-# 最新更新的排在最前面
-display_repos.sort(key=lambda repo: repo["pushed_at"], reverse=True)
 
 
 def relative_time(iso_str):
@@ -168,31 +112,10 @@ def format_title(name):
     return " ".join(word.capitalize() for word in name.replace("_", "-").split("-"))
 
 
-def get_repo_meta(repo):
-    name = repo["name"]
-    custom = APP_METADATA.get(name, {})
+display_items = [item for item in (build_item(entry) for entry in featured_items) if item]
 
-    display_name = custom.get("name") or format_title(name)
-    title_attr = custom.get("title") or f"{display_name} - Developer Tool"
-    description = custom.get("description") or repo.get("description") or f"A developer tool and open-source project for {display_name}."
-
-    has_pages = bool(repo.get("has_pages"))
-    if has_pages:
-        app_url = f"/{name}/"
-        target_attr = ""
-    else:
-        app_url = repo.get("homepage") or repo["html_url"]
-        target_attr = ' target="_blank" rel="noopener"'
-
-    return {
-        "name": display_name,
-        "raw_name": name,
-        "title_attr": title_attr,
-        "description": description,
-        "app_url": app_url,
-        "target_attr": target_attr,
-        "has_pages": has_pages,
-    }
+# 最新更新的排在最前面（拿不到更新时间的站外项目沉底）
+display_items.sort(key=lambda item: item["pushed_at"] or "", reverse=True)
 
 
 html_template = """<!DOCTYPE html>
@@ -423,26 +346,27 @@ card_template = """
     </div>
     <p class="card-desc">{description}</p>
     <div class="card-links">
-        {action_indicator}<a href="{repo_url}" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>{store_link}
+        {action_indicator}{repo_link}{store_link}
     </div>
 </article>
 """
 
 cards_html = ""
-for repo in display_repos:
-    meta = get_repo_meta(repo)
-    action_indicator = '<span class="card-btn-action" aria-hidden="true">Visit App &rarr;</span>' if meta["has_pages"] else ""
-    store_url = CHROME_STORE_LINKS.get(repo["name"])
+for item in display_items:
+    action_indicator = '<span class="card-btn-action" aria-hidden="true">Visit App &rarr;</span>' if item["has_pages"] else ""
+    store_url = CHROME_STORE_LINKS.get(item["raw_name"])
     store_link = f'<a href="{store_url}" class="card-link card-link-ghost" target="_blank" rel="noopener">Chrome Store &rarr;</a>' if store_url else ""
+    repo_link = f'<a href="{item["repo_url"]}" class="card-link card-link-ghost" target="_blank" rel="noopener">GitHub &rarr;</a>' if item["repo_url"] else ""
+    updated = relative_time(item["pushed_at"]) if item["pushed_at"] else ""
     cards_html += card_template.format(
-        name=meta["name"],
-        title_attr=meta["title_attr"],
-        app_url=meta["app_url"],
-        target_attr=meta["target_attr"],
-        description=meta["description"],
-        updated=relative_time(repo["pushed_at"]),
-        repo_url=repo["html_url"],
+        name=item["name"],
+        title_attr=item["title_attr"],
+        app_url=item["app_url"],
+        target_attr=item["target_attr"],
+        description=item["description"],
+        updated=updated,
         action_indicator=action_indicator,
+        repo_link=repo_link,
         store_link=store_link,
     )
 
@@ -470,12 +394,12 @@ json_ld_data = {
             "hasPart": [
                 {
                     "@type": "SoftwareApplication",
-                    "name": get_repo_meta(repo)["name"],
-                    "url": f"{DOMAIN}/{repo['name']}/" if repo.get("has_pages") else repo["html_url"],
-                    "description": get_repo_meta(repo)["description"],
+                    "name": item["name"],
+                    "url": f"{DOMAIN}{item['app_url']}" if item["app_url"].startswith("/") else item["app_url"],
+                    "description": item["description"],
                     "applicationCategory": "WebApplication",
                 }
-                for repo in display_repos
+                for item in display_items
             ],
         },
     ],
@@ -494,16 +418,13 @@ final_html = html_template.format(
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(final_html)
 
-# Compute Matrix links from display_repos (mirroring the dashboard cards)
+# Compute Matrix links from display_items (mirroring the dashboard cards)
 matrix_links_list = []
-for repo in display_repos:
-    if repo["name"].lower() == f"{USERNAME.lower()}.github.io":
-        continue
-    meta = get_repo_meta(repo)
-    url = meta["app_url"]
+for item in display_items:
+    url = item["app_url"]
     if url.startswith("/"):
         url = f"{DOMAIN}{url}"
-    matrix_links_list.append(f'<a href="{url}" target="_blank" rel="noopener">{meta["name"]}</a>')
+    matrix_links_list.append(f'<a href="{url}" target="_blank" rel="noopener">{item["name"]}</a>')
 
 matrix_html = ""
 if matrix_links_list:
@@ -594,10 +515,10 @@ sitemap_urls = [f"{DOMAIN}/"] + [
     for repo in repos
     if repo.get("has_pages") and repo["name"].lower() != f"{USERNAME.lower()}.github.io"
 ]
-# If repos was empty, fall back to display_repos
-if len(sitemap_urls) == 1 and display_repos:
+# If repos was empty, fall back to display_items
+if len(sitemap_urls) == 1 and display_items:
     sitemap_urls += [
-        f"{DOMAIN}/{repo['name']}/" for repo in display_repos if repo.get("has_pages")
+        f"{DOMAIN}/{item['raw_name']}/" for item in display_items if item.get("has_pages")
     ]
 seen = set()
 unique_sitemap_urls = []

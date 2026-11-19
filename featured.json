@@ -1,0 +1,82 @@
+{
+  "projects": [
+    {
+      "repo": "VelaCraft",
+      "name": "VelaCraft",
+      "title": "Xiaomi Band 8 Visual Watchface Studio",
+      "description": "A next-generation pure-web visual watchface studio for the Xiaomi Band 8, with drag-and-drop design and live preview."
+    },
+    {
+      "repo": "tug",
+      "name": "Tug",
+      "title": "Browser Extension Store Submission CLI",
+      "description": "A zero-credential companion CLI that ships browser extensions to the Chrome Web Store and Edge Add-ons as easily as git push, with declarative YAML listings and pre-flight asset validation."
+    },
+    {
+      "repo": "link-and-title-copy-pro",
+      "name": "Link & Title Copy Pro",
+      "title": "Copy Browser Tab Title and URL Link Extension",
+      "description": "A lightweight browser extension to copy tab titles and URL links simultaneously in Markdown, HTML, and text formats. 一键复制浏览器标签页标题与链接。"
+    },
+    {
+      "repo": "iphone-lockstage",
+      "name": "iPhone Lockstage",
+      "title": "iPhone Lock Screen & Home Screen Wallpaper Preview",
+      "description": "Pixel-accurate iPhone lock screen and home screen wallpaper preview, with every layout constant measured from iOS 26 Simulator screenshots."
+    },
+    {
+      "repo": "query-params-viewer",
+      "name": "Query Params Viewer",
+      "title": "URL Query String Parser & Parameter Visualizer",
+      "description": "A free online developer tool to parse, decode, and visualize complex URL query string parameters with real-time editing and nested tree view."
+    },
+    {
+      "repo": "gemini-polish",
+      "name": "Gemini Polish",
+      "title": "Gemini Graph Split-Viewer & Diagram Visualizer Tool",
+      "description": "A split-view diagram and graph visualizer tool designed for side-by-side comparison, rendering, and real-time visualization."
+    },
+    {
+      "repo": "doc-parser",
+      "name": "Doc Parser",
+      "title": "Smart Document Parser & Content Extractor",
+      "description": "An automated document parsing and text extraction tool for structured data analysis and batch processing."
+    },
+    {
+      "repo": "agent-course",
+      "name": "Agent Course",
+      "title": "TypeScript AI Agent Development Course",
+      "description": "A practical provider-neutral TypeScript course and hands-on guide for building autonomous AI agents."
+    },
+    {
+      "repo": "keep-scroll-sync",
+      "name": "Keep Scroll Sync",
+      "title": "Cross-Platform Scroll Position Keeper & Synchronizer",
+      "description": "A cross-platform productivity extension to preserve, record, and synchronize webpage scroll positions across browsers."
+    },
+    {
+      "repo": "edgeform",
+      "name": "EdgeForm",
+      "title": "Edge-Native Micro-Site Engine & Dynamic Form Generator",
+      "description": "An edge-native micro-site engine and dynamic form builder powered by Cloudflare Pages, D1, and KV with zero hosting cost."
+    },
+    {
+      "repo": "snap-kit",
+      "name": "Snap Kit",
+      "title": "Web Screenshot & Code Snippet Snapping Tool",
+      "description": "A fast web snapshot and image capture utility for creating beautiful code snippets and UI screenshots."
+    },
+    {
+      "repo": "vue-pdf-reader",
+      "name": "Vue PDF Reader",
+      "title": "Vue.js PDF Reader Component & Document Viewer",
+      "description": "An open-source Vue.js component for responsive PDF reading, rendering, and document viewing based on PDF.js."
+    },
+    {
+      "url": "https://einktools.com",
+      "name": "einktools",
+      "title": "Free E-ink Lock Screen & Wallpaper Tools",
+      "description": "37 free browser tools for e-ink readers: custom lock and sleep screens for 30+ Kindle, Kobo, Boox, and Xteink models, XTC converters, templates, and planners. No account, no upload."
+    }
+  ]
+}

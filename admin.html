@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard 维护</title>
+<style>
+    :root {
+        --bg: #f7f7f8; --surface: #ffffff; --border: #e5e7eb;
+        --text: #18181b; --muted: #6b7280; --accent: #4f46e5;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #0f1115; --surface: #1a1d23; --border: #2a2e37;
+            --text: #f3f4f6; --muted: #9aa0a8; --accent: #818cf8;
+        }
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; background: var(--bg); color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+    }
+    .page { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.25rem 3rem; }
+    h1 { font-size: 1.35rem; margin: 0 0 0.25rem; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 1.5rem; }
+    .toolbar { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+    button {
+        background: var(--accent); color: #fff; border: 0; border-radius: 8px;
+        padding: 0.55rem 1.1rem; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    }
+    button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    button.small { padding: 0.25rem 0.7rem; font-size: 0.8rem; }
+    button:disabled { opacity: 0.5; cursor: default; }
+    .section-title { font-size: 1rem; font-weight: 700; margin: 1.75rem 0 0.75rem; }
+    .hint { color: var(--muted); font-size: 0.8rem; margin: 0 0 0.75rem; }
+    .row {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.6rem;
+    }
+    .row-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .row-head input[type="checkbox"] { width: 1.05rem; height: 1.05rem; accent-color: var(--accent); }
+    .repo-name { font-weight: 600; }
+    .repo-name a { color: inherit; text-decoration: none; }
+    .repo-name a:hover { color: var(--accent); }
+    .badge {
+        font-size: 0.7rem; padding: 0.1rem 0.5rem; border-radius: 99px;
+        border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+    }
+    .badge.on { color: var(--accent); border-color: var(--accent); }
+    .pushed { color: var(--muted); font-size: 0.78rem; margin-left: auto; white-space: nowrap; }
+    .fields { margin-top: 0.6rem; display: none; }
+    .row.expanded .fields { display: block; }
+    .toggle-edit {
+        background: none; border: none; color: var(--accent); cursor: pointer;
+        font-size: 0.8rem; padding: 0; font-weight: 600;
+    }
+    .field { margin-top: 0.5rem; }
+    .field label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .field input, .field textarea {
+        width: 100%; padding: 0.45rem 0.6rem; font-size: 0.85rem; font-family: inherit;
+        border: 1px solid var(--border); border-radius: 7px;
+        background: var(--bg); color: var(--text);
+    }
+    .field textarea { resize: vertical; min-height: 2.4rem; }
+    .field input::placeholder, .field textarea::placeholder { color: var(--muted); opacity: 0.6; }
+    .desc-preview { color: var(--muted); font-size: 0.78rem; margin-top: 0.35rem; }
+    .remove-btn {
+        background: none; border: none; color: #dc2626; cursor: pointer;
+        font-size: 0.8rem; padding: 0; margin-left: auto; font-weight: 600;
+    }
+    #output {
+        margin-top: 1.5rem; white-space: pre-wrap; font-size: 0.78rem;
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 10px; padding: 1rem; display: none;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .status { font-size: 0.85rem; margin-left: auto; }
+    .status.ok { color: #16a34a; }
+    .status.err { color: #dc2626; }
+</style>
+</head>
+<body>
+<div class="page">
+    <h1>App Dashboard 维护</h1>
+    <p class="sub">勾选要展示的项目，需要时填写展示信息；保存写入 featured.json，推送后 CI 会自动重新生成页面。</p>
+
+    <div class="toolbar">
+        <div id="conn-banner" style="display:none; width:100%; background:#dc2626; color:#fff; border-radius:8px; padding:0.6rem 0.9rem; font-size:0.85rem; margin-bottom:0.25rem;"></div>
+        <button id="save-btn" disabled>保存</button>
+        <button id="preview-btn" class="ghost" disabled>生成预览</button>
+        <span class="status" id="status"></span>
+    </div>
+
+    <h2 class="section-title">GitHub 项目</h2>
+    <p class="hint">列表自动发现：开启了 Pages 或填了 homepage 的仓库。展示名/标题/描述留空时，部署时自动使用 GitHub 仓库上的信息。
+        <button type="button" id="refresh-list" class="small ghost" onclick="loadState()">刷新列表</button>
+        <span id="gh-warn" style="display:none; color:#d97706; font-size:0.8rem; margin-left:0.5rem;"></span>
+    </p>
+    <div id="repo-list"></div>
+
+    <h2 class="section-title">站外项目</h2>
+    <p class="hint">不在 GitHub 上的项目（信息需要完整填写）。</p>
+    <div id="external-list"></div>
+    <button id="add-external" class="small ghost">＋ 添加站外项目</button>
+
+    <pre id="output"></pre>
+</div>
+
+<script>
+const state = { repos: [], featured: [] };
+const $ = (sel) => document.querySelector(sel);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function fmtDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    return d.toLocaleDateString("zh-CN", { year: "numeric", month: "numeric", day: "numeric" });
+}
+
+async function loadState() {
+    const banner = document.getElementById("conn-banner");
+    try {
+        const resp = await fetch("/api/state");
+        if (!resp.ok) {
+            const text = await resp.text();
+            throw new Error(`HTTP ${resp.status}：${text.slice(0, 160)}`);
+        }
+        const data = await resp.json();
+        state.repos = data.repos || [];
+        state.featured = data.featured || [];
+        state.githubError = data.github_error || null;
+        render();
+        setConnected(true);
+    } catch (e) {
+        state.githubError = null;
+        setConnected(false, String(e));
+    }
+}
+
+// 连接状态：未连接时禁用保存，并给出明确的引导
+function setConnected(ok, detail) {
+    const banner = document.getElementById("conn-banner");
+    if (ok) {
+        banner.style.display = "none";
+        $("#save-btn").disabled = false;
+        $("#preview-btn").disabled = false;
+        if (state.githubError) {
+            const warn = document.getElementById("gh-warn");
+            warn.style.display = "block";
+            warn.textContent = `⚠️ GitHub 仓库列表拉取失败（${state.githubError}）。当前只能看到已收录的项目，候选列表不全——检查网络/代理后点右侧"刷新列表"。`;
+        } else {
+            document.getElementById("gh-warn").style.display = "none";
+        }
+    } else {
+        const fileProto = location.protocol === "file:";
+        banner.innerHTML = fileProto
+            ? "⚠️ 当前是直接打开的 admin.html（file://），没有本地服务。请运行 python3 admin.py，并通过它自动打开的 http://127.0.0.1:7788 页面操作。"
+            : `⚠️ 无法连接到本地服务（${esc(detail || "未知错误")}）。请确认 admin.py 还在运行（终端里不要 Ctrl+C / 关窗口）。若开了代理（Clash 等），把 127.0.0.1 设为直连或临时关闭代理。<button type="button" id="retry-btn" style="margin-left:0.5rem">重试</button>`;
+        banner.style.display = "block";
+        $("#save-btn").disabled = true;
+        $("#preview-btn").disabled = true;
+        const retry = document.getElementById("retry-btn");
+        if (retry) retry.addEventListener("click", loadState);
+    }
+}
+
+function render() {
+    // 收录的 GitHub 条目：{repo, name?, title?, description?} 或纯字符串
+    const featuredByRepo = new Map();
+    const externals = [];
+    for (const entry of state.featured) {
+        if (typeof entry === "string") {
+            featuredByRepo.set(entry, { repo: entry });
+        } else if (entry && entry.repo) {
+            featuredByRepo.set(entry.repo, entry);
+        } else if (entry && entry.url) {
+            externals.push(entry);
+        }
+    }
+
+    const repoList = $("#repo-list");
+    repoList.innerHTML = "";
+    for (const repo of state.repos) {
+        const entry = featuredByRepo.get(repo.repo) || {};
+        repoList.appendChild(repoRow(repo, entry));
+    }
+
+    const extList = $("#external-list");
+    extList.innerHTML = "";
+    for (const entry of externals) {
+        extList.appendChild(externalRow(entry));
+    }
+    if (!externals.length) {
+        const p = document.createElement("p");
+        p.className = "hint";
+        p.textContent = "（暂无站外项目）";
+        extList.appendChild(p);
+    }
+}
+
+function repoRow(repo, entry) {
+    const div = document.createElement("div");
+    div.className = "row";
+    const checked = !!entry.repo;
+    div.innerHTML = `
+        <div class="row-head">
+            <input type="checkbox" class="include" ${checked ? "checked" : ""}>
+            <span class="repo-name"><a href="${esc(repo.html_url)}" target="_blank" rel="noopener">${esc(repo.repo)}</a></span>
+            ${repo.has_pages ? '<span class="badge on">Pages</span>' : (repo.homepage ? '<span class="badge on">homepage</span>' : '<span class="badge">无站点</span>')}
+            <button type="button" class="toggle-edit">编辑信息</button>
+            <span class="pushed">${esc(fmtDate(repo.pushed_at))}</span>
+        </div>
+        <div class="fields">
+            <div class="field">
+                <label>展示名（留空自动生成）</label>
+                <input class="f-name" placeholder="${esc(repo.repo)}" value="${esc(entry.name || "")}">
+            </div>
+            <div class="field">
+                <label>标题（SEO title 属性，留空自动生成）</label>
+                <input class="f-title" value="${esc(entry.title || "")}">
+            </div>
+            <div class="field">
+                <label>描述（留空时使用 GitHub 仓库描述）</label>
+                <textarea class="f-desc" placeholder="${esc(repo.description || "（GitHub 上无描述）")}">${esc(entry.description || "")}</textarea>
+                ${repo.description ? `<div class="desc-preview">GitHub 描述：${esc(repo.description)}</div>` : ""}
+            </div>
+        </div>`;
+    div.querySelector(".toggle-edit").addEventListener("click", () => div.classList.toggle("expanded"));
+    return div;
+}
+
+function externalRow(entry = {}) {
+    const div = document.createElement("div");
+    div.className = "row";
+    div.innerHTML = `
+        <div class="row-head">
+            <span class="repo-name">站外项目</span>
+            <button type="button" class="remove-btn">删除</button>
+        </div>
+        <div class="fields" style="display:block">
+            <div class="field"><label>网址（必填）</label>
+                <input class="f-url" placeholder="https://example.com" value="${esc(entry.url || "")}"></div>
+            <div class="field"><label>展示名</label>
+                <input class="f-name" value="${esc(entry.name || "")}"></div>
+            <div class="field"><label>标题</label>
+                <input class="f-title" value="${esc(entry.title || "")}"></div>
+            <div class="field"><label>描述</label>
+                <textarea class="f-desc">${esc(entry.description || "")}</textarea></div>
+            <div class="field"><label>更新时间（可选，ISO 格式，用于排序和"xx 天前更新"徽标）</label>
+                <input class="f-updated" placeholder="2026-11-01T00:00:00Z" value="${esc(entry.updated || "")}"></div>
+        </div>`;
+    div.querySelector(".remove-btn").addEventListener("click", () => div.remove());
+    return div;
+}
+
+function collectProjects() {
+    const projects = [];
+    for (const row of document.querySelectorAll("#repo-list .row")) {
+        if (!row.querySelector(".include").checked) continue;
+        const item = { repo: row.querySelector(".repo-name").textContent.trim() };
+        const name = row.querySelector(".f-name").value.trim();
+        const title = row.querySelector(".f-title").value.trim();
+        const desc = row.querySelector(".f-desc").value.trim();
+        if (name) item.name = name;
+        if (title) item.title = title;
+        if (desc) item.description = desc;
+        projects.push(item);
+    }
+    for (const row of document.querySelectorAll("#external-list .row")) {
+        const url = row.querySelector(".f-url").value.trim();
+        if (!url) continue;
+        const item = { url };
+        const name = row.querySelector(".f-name").value.trim();
+        const title = row.querySelector(".f-title").value.trim();
+        const desc = row.querySelector(".f-desc").value.trim();
+        const updated = row.querySelector(".f-updated").value.trim();
+        if (name) item.name = name;
+        if (title) item.title = title;
+        if (desc) item.description = desc;
+        if (updated) item.updated = updated;
+        projects.push(item);
+    }
+    return projects;
+}
+
+function setStatus(msg, cls) {
+    const el = $("#status");
+    el.textContent = msg;
+    el.className = `status ${cls || ""}`;
+}
+
+async function post(path, body) {
+    let resp;
+    try {
+        resp = await fetch(path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body || {}),
+        });
+    } catch (e) {
+        // 请求没到服务端：网络层面失败
+        setConnected(false);
+        throw new Error("无法连接到本地服务，请确认 admin.py 正在运行后刷新页面");
+    }
+    const text = await resp.text();
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        throw new Error(`服务返回异常（HTTP ${resp.status}）：${text.slice(0, 200)}`);
+    }
+}
+
+$("#save-btn").addEventListener("click", async () => {
+    $("#save-btn").disabled = true;
+    setStatus("保存中…");
+    try {
+        const result = await post("/api/save", { projects: collectProjects() });
+        if (result.ok) {
+            setStatus(`已保存 featured.json（${result.count} 个项目）`, "ok");
+        } else {
+            setStatus(`保存失败：${(result.errors || []).join("；")}`, "err");
+        }
+    } catch (e) {
+        setStatus(`保存失败：${e}`, "err");
+    } finally {
+        $("#save-btn").disabled = false;
+    }
+});
+
+$("#preview-btn").addEventListener("click", async () => {
+    $("#preview-btn").disabled = true;
+    setStatus("生成中…");
+    const out = $("#output");
+    out.style.display = "block";
+    out.textContent = "生成中…";
+    try {
+        const result = await post("/api/generate");
+        out.textContent = (result.stdout || "") + (result.stderr || "");
+        if (result.ok) {
+            setStatus("生成完成，可本地打开 index.html 预览", "ok");
+        } else {
+            setStatus(`生成失败（exit ${result.code}）`, "err");
+        }
+    } catch (e) {
+        out.textContent = String(e);
+        setStatus("生成失败", "err");
+    } finally {
+        $("#preview-btn").disabled = false;
+    }
+});
+
+$("#add-external").addEventListener("click", () => {
+    $("#external-list").appendChild(externalRow());
+});
+
+loadState();
+</script>
+</body>
+</html>
